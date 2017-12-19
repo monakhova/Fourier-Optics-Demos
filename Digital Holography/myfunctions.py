@@ -3,23 +3,6 @@ def rgb2gray(rgb):
     import numpy as np   
     return np.dot(rgb[...,:3], [0.299, 0.587, 0.114])
 
-def FresProp(img,L,lmda,z):
-    import numpy as np   
-    [M, N] = np.shape(img)    # Input field array size 
-    dx = L/M                 # Sample interval 
-    fx = np.arange(-1/(2*dx), 1/(2*dx), 1/L)  # frequency coordinates
-    fy = fx
-    [FX, FY] = np.meshgrid(fx,fy)
-    
-    H = np.exp(-1j*np.pi*lmda*z*((FX)**2 + (FY)**2))  # Tranfer Function 
-    H = fft.fftshift(H)                            # Shifter TF
-    
-    U1 = fft.fft2(fft.fftshift(img))
-    U2 = H*U1
-    u2 = fft.ifftshift(fft.ifft2(U2))
-    
-    return(u2, H)
-
 def contrast(g_in):
     import numpy as np   
     I_max = np.max(np.abs(g_in)**2)
@@ -27,8 +10,7 @@ def contrast(g_in):
     C = (I_max - I_min)/(I_max+I_min)
     return(C)
     
-
-def propogate(ein, lmda, z, ps):
+def propagate(ein, lmda, z, ps):
     import numpy as np   
     # Digitally refocuses a complex field a given distance, z. 
     # (ref pg 67,J Goodman, Introduction to Fourier Optics)
@@ -49,18 +31,16 @@ def propogate(ein, lmda, z, ps):
     fy=(y/(ps*N));    #frequency space height [1/m]
     fx2fy2 = fx**2 + fy**2;
     
-    
+    # Padding value 
     ein_pad = ein;
     E0fft = np.fft.fftshift(np.fft.fft2(ein_pad));
     mask = 1;
     
     for z_ind in range(0,z.shape[0]):
-        H  = np.exp(-1j*np.pi*lmda*z[z_ind]*fx2fy2); # Fast Transfer Function
+        H  = np.exp(-1j*np.pi*lmda*z[z_ind]*fx2fy2); 
         Eout_pad=np.fft.ifft2(np.fft.ifftshift(E0fft*H*mask));
-        
-        #f_metric[z_ind] = np.sum(np.abs(H)*np.sum(np.abs(E0fft)))
         f_metric[z_ind] = np.linalg.norm(np.real(H)*2*np.real(H)*E0fft,1)
-        eout[:,:,z_ind]=Eout_pad #[1+(M-m)/2:(M+m)/2,1+(N-n)/2:(N+n)/2];
+        eout[:,:,z_ind]=Eout_pad 
         Hout[:,:,z_ind]=H.copy()
     
     
@@ -69,6 +49,7 @@ def propogate(ein, lmda, z, ps):
 
 
 def interactive_slider(image, title):
+    # Makes an interactive slider
     from ipywidgets import widgets
     import matplotlib.pyplot as plt            # For making figures
     def slice_through_images(image):
@@ -82,7 +63,9 @@ def interactive_slider(image, title):
     stepper = slice_through_images(image)
     widgets.interact(stepper, i_step=(0, image.shape[2]-1))
     
+    
 def imshowAnim(myimage, zs, niter, imsize):
+    # Function to generate animated video 
     
     import matplotlib.pyplot as plt            # For making figures
     import numpy as np                         # Standard NumPy library 
