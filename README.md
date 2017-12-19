@@ -11,5 +11,5 @@ Matlab code from [Laura Waller's Open Source Matlab Code](http://www.laurawaller
   * simulated: propagates complex field by a desired distance
   * experimental: takes in defocused image from microscope and propagates to digitally refocus the image
 
-### 2. Quantitative Phase from defocus (coming soon)
+### 2. Quantitative Phase from defocus
   Takes in a defocused image stack and solves for the phase of the object using Gerchberg-Saxton.
